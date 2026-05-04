@@ -1,0 +1,23 @@
+IS 269: Ordinary Portland Cement
+This standard specifies the requirements for ordinary Portland cement used in general construction.
+
+IS 8112: High Strength Ordinary Portland Cement
+For applications requiring higher strength cement.
+
+IS 12269: Ordinary Portland Cement, 53 Grade
+Specification for 53 grade cement.
+
+IS 383: Coarse and Fine Aggregate for Concrete
+Specifications for aggregates used in concrete.
+
+IS 456: Plain and Reinforced Concrete - Code of Practice
+Code of practice for concrete structures.
+
+IS 800: General Construction in Steel - Code of Practice
+For steel structures.
+
+IS 875: Code of Practice for Design Loads
+Loads for building design.
+
+IS 13920: Ductile Detailing of Reinforced Concrete Structures
+For earthquake resistant structures.

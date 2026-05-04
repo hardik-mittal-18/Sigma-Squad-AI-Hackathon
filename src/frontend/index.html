@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BIS Standards Recommendation Engine</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 800px; margin: auto; }
+        input, button { padding: 10px; margin: 10px 0; }
+        input { width: 100%; }
+        button { background: #007bff; color: white; border: none; cursor: pointer; }
+        .loading { display: none; }
+        .result { margin: 20px 0; padding: 10px; border: 1px solid #ddd; }
+        .standard { margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>BIS Standards Recommendation Engine</h1>
+        <p>Enter a product description for building materials (e.g., cement, steel, concrete):</p>
+        <input type="text" id="query" placeholder="e.g., cement for construction">
+        <button onclick="recommend()">Get Recommendations</button>
+        <div id="loading" class="loading">Loading...</div>
+        <div id="results"></div>
+    </div>
+
+    <script>
+        async function recommend() {
+            const query = document.getElementById('query').value;
+            if (!query) return;
+
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('results').innerHTML = '';
+
+            try {
+                const response = await fetch('http://localhost:8000/recommend', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query })
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'API Error: ' + response.status);
+                }
+                
+                const data = await response.json();
+                
+                if (!data.standards || data.standards.length === 0) {
+                    document.getElementById('results').innerHTML = '<div class="result">No standards found. Make sure OpenAI API key is set.</div>';
+                    return;
+                }
+
+                let html = `<div class="result"><h3>Recommended Standards (Latency: ${(data.latency_seconds || 0).toFixed(2)}s)</h3>`;
+                data.standards.forEach(std => {
+                    html += `<div class="standard"><strong>${std.code}: ${std.title}</strong><br>${std.reason}</div>`;
+                });
+                html += '</div>';
+                document.getElementById('results').innerHTML = html;
+            } catch (error) {
+                document.getElementById('results').innerHTML = '<div class="result" style="color:red;"><strong>Error:</strong> ' + error.message + '<br><br>Make sure:<br>1. Backend is running on http://localhost:8000<br>2. Set OPENAI_API_KEY environment variable</div>';
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+[
+  {
+    "id": "1",
+    "relevant_standards": ["IS 269", "IS 8112", "IS 12269"]
+  },
+  {
+    "id": "2",
+    "relevant_standards": ["IS 800", "IS 875"]
+  },
+  {
+    "id": "3",
+    "relevant_standards": ["IS 456", "IS 383"]
+  },
+  {
+    "id": "4",
+    "relevant_standards": ["IS 383"]
+  },
+  {
+    "id": "5",
+    "relevant_standards": ["IS 456", "IS 13920"]
+  }
+]
