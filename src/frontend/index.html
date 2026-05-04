@@ -1,69 +1,1123 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BIS Standards Recommendation Engine</title>
+    <title>BIS AI Compliance Assistant</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        .container { max-width: 800px; margin: auto; }
-        input, button { padding: 10px; margin: 10px 0; }
-        input { width: 100%; }
-        button { background: #007bff; color: white; border: none; cursor: pointer; }
-        .loading { display: none; }
-        .result { margin: 20px 0; padding: 10px; border: 1px solid #ddd; }
-        .standard { margin: 10px 0; }
+        :root {
+            color-scheme: light dark;
+            font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            font-size: 16px;
+            line-height: 1.65;
+            color: #111827;
+            background: #f8fafc;
+            transition: background 0.35s ease, color 0.35s ease;
+        }
+
+        body.dark {
+            color: #e2e8f0;
+            background: #020617;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        button,
+        input {
+            font: inherit;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: radial-gradient(circle at top left, rgba(59, 130, 246, 0.12), transparent 24%),
+                        radial-gradient(circle at bottom right, rgba(16, 185, 129, 0.1), transparent 22%),
+                        #f8fafc;
+        }
+
+        body.dark {
+            background: radial-gradient(circle at top left, rgba(14, 165, 233, 0.12), transparent 24%),
+                        radial-gradient(circle at bottom right, rgba(34, 197, 94, 0.09), transparent 22%),
+                        #020617;
+        }
+
+        .container {
+            max-width: 1140px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        .hero {
+            position: relative;
+            overflow: hidden;
+            border-radius: 34px;
+            padding: 42px 40px 36px;
+            background: linear-gradient(135deg, rgba(14, 165, 233, 0.98), rgba(16, 185, 129, 0.95));
+            color: white;
+            box-shadow: 0 32px 90px rgba(15, 23, 42, 0.18);
+        }
+
+        .hero::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 20% 20%, rgba(255,255,255,0.26), transparent 28%),
+                        radial-gradient(circle at 85% 10%, rgba(255,255,255,0.14), transparent 20%),
+                        radial-gradient(circle at 80% 80%, rgba(255,255,255,0.08), transparent 18%);
+            pointer-events: none;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            max-width: 780px;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.16);
+            border: 1px solid rgba(255, 255, 255, 0.28);
+            padding: 12px 16px;
+            backdrop-filter: blur(8px);
+            font-size: 0.95rem;
+            margin-bottom: 22px;
+        }
+
+        .hero-title {
+            margin: 0;
+            font-size: clamp(3rem, 5vw, 4.5rem);
+            line-height: 0.95;
+            letter-spacing: -0.06em;
+        }
+
+        .hero-subtitle {
+            margin: 20px 0 0;
+            font-size: 1.05rem;
+            max-width: 760px;
+            color: rgba(255, 255, 255, 0.92);
+            line-height: 1.65;
+        }
+
+        .hero-notes {
+            margin-top: 28px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .hero-tag {
+            background: rgba(255, 255, 255, 0.14);
+            padding: 10px 16px;
+            border-radius: 999px;
+            font-size: 0.95rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .panel {
+            margin-top: 30px;
+            display: grid;
+            grid-template-columns: 1.5fr 1fr;
+            gap: 26px;
+        }
+
+        .main-card,
+        .sidebar-card,
+        .pipeline-card {
+            background: rgba(255, 255, 255, 0.96);
+            border: 1px solid rgba(148, 163, 184, 0.22);
+            border-radius: 28px;
+            padding: 28px;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 24px 60px rgba(15, 23, 42, 0.08);
+            transition: background 0.3s ease, border-color 0.3s ease;
+        }
+
+        body.dark .main-card,
+        body.dark .sidebar-card,
+        body.dark .pipeline-card {
+            background: rgba(15, 23, 42, 0.88);
+            border-color: rgba(148, 163, 184, 0.22);
+        }
+
+        .section-heading {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin: 0 0 20px;
+        }
+
+        .section-heading h2 {
+            margin: 0;
+            font-size: 1.35rem;
+        }
+
+        .section-heading p {
+            margin: 0;
+            color: #475569;
+        }
+
+        body.dark .section-heading p {
+            color: #94a3b8;
+        }
+
+        .smart-input {
+            display: grid;
+            gap: 18px;
+        }
+
+        .input-row {
+            display: grid;
+            gap: 12px;
+            position: relative;
+        }
+
+        .input-row input {
+            width: 100%;
+            min-height: 72px;
+            padding: 18px 20px;
+            border-radius: 22px;
+            border: 1px solid rgba(148, 163, 184, 0.28);
+            background: rgba(255, 255, 255, 0.96);
+            box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.06);
+            color: #111827;
+            font-size: 1rem;
+            transition: border-color 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        body.dark .input-row input {
+            background: rgba(15, 23, 42, 0.86);
+            color: #e2e8f0;
+        }
+
+        .input-row input:focus {
+            outline: none;
+            border-color: rgba(14, 165, 233, 0.8);
+            box-shadow: 0 0 0 5px rgba(14, 165, 233, 0.12);
+        }
+
+        .input-row .input-icon {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #0ea5e9;
+            font-size: 1.25rem;
+        }
+
+        .input-row input {
+            padding-left: 48px;
+        }
+
+        .helper-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 14px;
+            align-items: center;
+        }
+
+        .helper-row .helper-text {
+            color: #475569;
+        }
+
+        .chip-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .chip {
+            border-radius: 999px;
+            padding: 10px 16px;
+            border: 1px solid rgba(59, 130, 246, 0.25);
+            color: #0f172a;
+            background: rgba(59, 130, 246, 0.08);
+            cursor: pointer;
+            transition: transform 0.2s ease, background 0.2s ease;
+        }
+
+        .chip:hover {
+            transform: translateY(-1px);
+            background: rgba(59, 130, 246, 0.14);
+        }
+
+        body.dark .chip {
+            color: #dbeafe;
+            background: rgba(59, 130, 246, 0.12);
+            border-color: rgba(148, 163, 184, 0.22);
+        }
+
+        .actions {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 14px;
+            align-items: center;
+        }
+
+        .actions button {
+            border: none;
+            border-radius: 16px;
+            padding: 16px 18px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+        }
+
+        .actions button:disabled {
+            cursor: not-allowed;
+            opacity: 0.55;
+        }
+
+        .primary-btn {
+            background: linear-gradient(135deg, #0ea5e9, #22c55e);
+            color: white;
+            box-shadow: 0 18px 30px rgba(14, 165, 233, 0.18);
+        }
+
+        .secondary-btn {
+            background: rgba(15, 23, 42, 0.04);
+            color: #0f172a;
+        }
+
+        body.dark .secondary-btn {
+            background: rgba(255, 255, 255, 0.08);
+            color: #e2e8f0;
+        }
+
+        .secondary-btn:hover,
+        .primary-btn:hover,
+        .chip:hover {
+            transform: translateY(-1px);
+        }
+
+        .status-row {
+            margin-top: 8px;
+        }
+
+        .status-row .message-box {
+            background: rgba(241, 245, 249, 0.9);
+            border-color: rgba(148, 163, 184, 0.18);
+            color: #334155;
+        }
+
+        body.dark .status-row .message-box {
+            background: rgba(15, 23, 42, 0.82);
+            color: #cbd5e1;
+        }
+
+        .analytics-strip {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(180px, 1fr));
+            gap: 16px;
+            margin-bottom: 18px;
+        }
+
+        .metric-card {
+            border-radius: 20px;
+            padding: 18px 20px;
+            background: rgba(248, 250, 252, 0.96);
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.65);
+        }
+
+        body.dark .metric-card {
+            background: rgba(15, 23, 42, 0.78);
+            border-color: rgba(148, 163, 184, 0.2);
+        }
+
+        .metric-card span {
+            color: #475569;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        body.dark .metric-card span {
+            color: #94a3b8;
+        }
+
+        .metric-card strong {
+            display: block;
+            color: #111827;
+            font-size: 1.35rem;
+        }
+
+        body.dark .metric-card strong {
+            color: #e2e8f0;
+        }
+
+        .results-panel {
+            display: grid;
+            gap: 18px;
+        }
+
+        .result-card {
+            border-radius: 26px;
+            padding: 28px;
+            background: rgba(255, 255, 255, 0.96);
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            box-shadow: 0 24px 60px rgba(15, 23, 42, 0.08);
+            opacity: 0;
+            transform: translateY(18px);
+            animation: fadeInUp 0.45s ease forwards;
+        }
+
+        body.dark .result-card {
+            background: rgba(15, 23, 42, 0.88);
+            border-color: rgba(148, 163, 184, 0.22);
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.22);
+        }
+
+        .result-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 32px 80px rgba(15, 23, 42, 0.12);
+        }
+
+        .result-header {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 18px;
+        }
+
+        .result-title {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .standard-code {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            border-radius: 16px;
+            background: rgba(59, 130, 246, 0.1);
+            color: #0f172a;
+            font-weight: 700;
+        }
+
+        body.dark .standard-code {
+            background: rgba(59, 130, 246, 0.16);
+            color: #dbeafe;
+        }
+
+        .result-title h3 {
+            margin: 0;
+            font-size: 1.1rem;
+            color: #111827;
+        }
+
+        body.dark .result-title h3 {
+            color: #f8fafc;
+        }
+
+        .result-title p {
+            margin: 0;
+            color: #475569;
+        }
+
+        body.dark .result-title p {
+            color: #cbd5e1;
+        }
+
+        .badge-strip {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .badge-pill {
+            border-radius: 999px;
+            padding: 10px 14px;
+            font-size: 0.88rem;
+            background: rgba(14, 165, 233, 0.12);
+            color: #0f172a;
+            font-weight: 700;
+        }
+
+        .badge-pill.high {
+            background: rgba(34, 197, 94, 0.14);
+            color: #166534;
+        }
+
+        .badge-pill.medium {
+            background: rgba(59, 130, 246, 0.14);
+            color: #1d4ed8;
+        }
+
+        body.dark .badge-pill {
+            background: rgba(56, 189, 248, 0.12);
+            color: #dbeafe;
+        }
+
+        .content-text {
+            margin: 0 0 18px;
+            color: #475569;
+            line-height: 1.7;
+        }
+
+        body.dark .content-text {
+            color: #cbd5e1;
+        }
+
+        .confidence-bar {
+            margin-top: 18px;
+            height: 12px;
+            border-radius: 999px;
+            background: rgba(148, 163, 184, 0.18);
+            overflow: hidden;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            border-radius: 999px;
+            background: linear-gradient(135deg, #0ea5e9, #22c55e);
+            transition: width 0.4s ease;
+        }
+
+        .detail-panel {
+            margin-top: 18px;
+            border-radius: 20px;
+            padding: 20px;
+            background: rgba(248, 250, 252, 0.94);
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            display: none;
+        }
+
+        body.dark .detail-panel {
+            background: rgba(15, 23, 42, 0.84);
+            border-color: rgba(148, 163, 184, 0.22);
+        }
+
+        .detail-btn {
+            margin-top: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            border-radius: 16px;
+            border: none;
+            background: rgba(14, 165, 233, 0.12);
+            color: #0369a1;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s ease, transform 0.2s ease;
+        }
+
+        .detail-btn:hover {
+            transform: translateY(-1px);
+            background: rgba(14, 165, 233, 0.18);
+        }
+
+        body.dark .detail-btn {
+            background: rgba(56, 189, 248, 0.12);
+            color: #dbeafe;
+        }
+
+        .sidebar-card h3,
+        .pipeline-card h3 {
+            margin-top: 0;
+            font-size: 1.15rem;
+        }
+
+        .sidebar-row {
+            display: grid;
+            gap: 16px;
+        }
+
+        .sidebar-item {
+            border-radius: 18px;
+            padding: 16px;
+            background: rgba(248, 250, 252, 0.94);
+            border: 1px solid rgba(148, 163, 184, 0.15);
+        }
+
+        body.dark .sidebar-item {
+            background: rgba(15, 23, 42, 0.84);
+            border-color: rgba(148, 163, 184, 0.18);
+        }
+
+        .sidebar-item strong {
+            display: block;
+            margin-bottom: 8px;
+            color: #111827;
+        }
+
+        body.dark .sidebar-item strong {
+            color: #f8fafc;
+        }
+
+        .sidebar-item p {
+            margin: 0;
+            color: #475569;
+            line-height: 1.75;
+        }
+
+        body.dark .sidebar-item p {
+            color: #cbd5e1;
+        }
+
+        .dropdown-list {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            margin-top: 10px;
+            background: rgba(255, 255, 255, 0.96);
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            border-radius: 18px;
+            box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+            z-index: 20;
+            display: none;
+            overflow: hidden;
+        }
+
+        body.dark .dropdown-list {
+            background: rgba(15, 23, 42, 0.92);
+            border-color: rgba(148, 163, 184, 0.22);
+        }
+
+        .dropdown-item {
+            padding: 16px 18px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .dropdown-item:hover {
+            background: rgba(14, 165, 233, 0.1);
+        }
+
+        body.dark .dropdown-item:hover {
+            background: rgba(56, 189, 248, 0.12);
+        }
+
+        .footer {
+            margin-top: 32px;
+            color: #475569;
+            text-align: center;
+            font-size: 0.95rem;
+        }
+
+        body.dark .footer {
+            color: #94a3b8;
+        }
+
+        .voice-btn {
+            border: 1px solid rgba(59, 130, 246, 0.28);
+            background: rgba(59, 130, 246, 0.08);
+            color: #0f172a;
+            border-radius: 16px;
+            padding: 14px 18px;
+            cursor: pointer;
+            transition: background 0.2s ease, transform 0.2s ease;
+        }
+
+        .voice-btn.active {
+            background: rgba(34, 197, 94, 0.18);
+            color: #166534;
+            border-color: rgba(34, 197, 94, 0.35);
+        }
+
+        body.dark .voice-btn {
+            background: rgba(59, 130, 246, 0.12);
+            color: #dbeafe;
+            border-color: rgba(148, 163, 184, 0.22);
+        }
+
+        .loading-panel {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        body.dark .loading-panel {
+            color: #e2e8f0;
+        }
+
+        .spinner {
+            width: 18px;
+            height: 18px;
+            border: 3px solid rgba(14, 165, 233, 0.25);
+            border-top-color: #0ea5e9;
+            border-radius: 50%;
+            animation: spin 0.85s linear infinite;
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 0.45s ease forwards;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 1000px) {
+            .panel {
+                grid-template-columns: 1fr;
+            }
+
+            .analytics-strip {
+                grid-template-columns: 1fr;
+            }
+
+            .actions {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 680px) {
+            .hero {
+                padding: 32px 22px 28px;
+            }
+
+            .hero-title {
+                font-size: 2.7rem;
+            }
+
+            .section-heading {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>BIS Standards Recommendation Engine</h1>
-        <p>Enter a product description for building materials (e.g., cement, steel, concrete):</p>
-        <input type="text" id="query" placeholder="e.g., cement for construction">
-        <button onclick="recommend()">Get Recommendations</button>
-        <div id="loading" class="loading">Loading...</div>
-        <div id="results"></div>
-    </div>
+    <main class="container">
+        <section class="hero">
+            <div class="hero-content">
+                <div class="hero-badge">⚡ Powered by RAG AI</div>
+                <h1 class="hero-title">BIS AI Compliance Assistant</h1>
+                <p class="hero-subtitle">Instantly discover relevant BIS standards for building materials with intelligent recommendations and transparency built in.</p>
+                <div class="hero-notes">
+                    <span class="hero-tag">No hallucinations</span>
+                    <span class="hero-tag">Based on BIS documents</span>
+                    <span class="hero-tag">AI verified results</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="main-card fade-in-up">
+            <div class="section-heading">
+                <div>
+                    <h2>Smart input</h2>
+                    <p>Provide a product description and let the AI map it against BIS standards.</p>
+                </div>
+                <div class="voice-btn" id="voiceBtn">🎙️ Voice</div>
+            </div>
+            <div class="smart-input">
+                <div class="input-row">
+                    <span class="input-icon">🔍</span>
+                    <input id="query" type="text" placeholder="e.g., high strength concrete for bridges..." autocomplete="off" spellcheck="false">
+                    <div class="dropdown-list" id="dropdownList"></div>
+                </div>
+                <div class="helper-row">
+                    <p class="helper-text">Examples and smart suggestions help the engine understand your building material faster.</p>
+                    <div class="chip-list" id="chipList"></div>
+                </div>
+                <div class="actions">
+                    <button class="primary-btn" id="submitBtn">Analyze standards</button>
+                    <button class="secondary-btn" id="clearBtn">Reset</button>
+                    <button class="secondary-btn" id="copyBtn" disabled>Copy results</button>
+                </div>
+                <div class="status-row" id="statusRow" aria-live="polite"></div>
+            </div>
+        </section>
+
+        <section class="main-card fade-in-up">
+            <div class="section-heading">
+                <div>
+                    <h2>AI insights</h2>
+                    <p>Track latency, confidence and the number of documents searched in a single view.</p>
+                </div>
+            </div>
+            <div class="analytics-strip">
+                <div class="metric-card"><span>⚡ Latency</span><strong id="latencyValue">—</strong></div>
+                <div class="metric-card"><span>🎯 Confidence</span><strong id="confidenceValue">—</strong></div>
+                <div class="metric-card"><span>📊 Docs searched</span><strong id="docsValue">—</strong></div>
+            </div>
+            <div class="panel">
+                <div class="results-panel" id="resultsPanel">
+                    <div class="message-box">Start analysis to reveal premium BIS standard recommendations.</div>
+                </div>
+                <aside class="sidebar-card">
+                    <h3>Why these results?</h3>
+                    <div class="sidebar-row">
+                        <div class="sidebar-item">
+                            <strong>Matched keywords</strong>
+                            <p id="matchedKeywords">No search performed yet.</p>
+                        </div>
+                        <div class="sidebar-item">
+                            <strong>Top document snippet</strong>
+                            <p id="docSnippet">Recommendations are generated from BIS documents and vector search.</p>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+        </section>
+
+        <section class="pipeline-card fade-in-up">
+            <div class="section-heading">
+                <h2>How it works</h2>
+            </div>
+            <div class="analytics-strip">
+                <div class="metric-card">
+                    <span>1. Input</span>
+                    <strong>Describe material</strong>
+                </div>
+                <div class="metric-card">
+                    <span>2. Embedding</span>
+                    <strong>Semantic vectors</strong>
+                </div>
+                <div class="metric-card">
+                    <span>3. Vector search</span>
+                    <strong>Retrieve docs</strong>
+                </div>
+                <div class="metric-card">
+                    <span>4. LLM</span>
+                    <strong>Explain relevance</strong>
+                </div>
+                <div class="metric-card">
+                    <span>5. Results</span>
+                    <strong>Interactive cards</strong>
+                </div>
+            </div>
+        </section>
+
+        <footer class="footer">Built for BIS Hackathon · <a href="https://github.com/hardik-mittal-18/Sigma-Squad-AI-Hackathon" target="_blank" rel="noreferrer">GitHub</a> · Sigma Squad AI</footer>
+    </main>
 
     <script>
+        const queryInput = document.getElementById('query');
+        const submitBtn = document.getElementById('submitBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const copyBtn = document.getElementById('copyBtn');
+        const resultsPanel = document.getElementById('resultsPanel');
+        const statusRow = document.getElementById('statusRow');
+        const latencyValue = document.getElementById('latencyValue');
+        const confidenceValue = document.getElementById('confidenceValue');
+        const docsValue = document.getElementById('docsValue');
+        const matchedKeywords = document.getElementById('matchedKeywords');
+        const docSnippet = document.getElementById('docSnippet');
+        const dropdownList = document.getElementById('dropdownList');
+        const voiceBtn = document.getElementById('voiceBtn');
+
+        const examples = [
+            'High strength concrete for bridges',
+            'TMT steel bars for construction',
+            'Portland cement for foundations',
+            'Reinforced concrete wall panels',
+            'Precast concrete aggregates'
+        ];
+
+        const chips = ['Cement', 'Steel', 'Concrete', 'Aggregates'];
+        const historyKey = 'bis-ai-query-history';
+
+        const materialPattern = /cement|steel|concrete|rebar|tiles|glass|gypsum|aggregate|mortar|brick|plaster|insulation|paint|adhesive|PVC|wood|timber|stone|sand/i;
+
+        let recognition;
+        let voiceActive = false;
+
+        function setStatus(message, type = 'info') {
+            statusRow.innerHTML = `<div class="message-box ${type === 'error' ? 'error' : ''}">${message}</div>`;
+        }
+
+        function clearStatus() {
+            statusRow.innerHTML = '';
+        }
+
+        function setAnalytics(latency = '—', confidence = '—', docs = '—') {
+            latencyValue.textContent = typeof latency === 'number' ? `${latency.toFixed(2)}s` : latency;
+            confidenceValue.textContent = typeof confidence === 'number' ? `${Math.round(confidence * 100)}%` : confidence;
+            docsValue.textContent = docs;
+        }
+
+        function showLoading() {
+            resultsPanel.innerHTML = `
+                <div class="message-box">
+                    <div class="loading-panel"><span class="spinner"></span>Analyzing BIS standards...</div>
+                </div>
+            `;
+        }
+
+        function renderEmpty() {
+            resultsPanel.innerHTML = `<div class="message-box">Enter a building material description to surface BIS standard recommendations.</div>`;
+            setAnalytics();
+            matchedKeywords.textContent = 'No search performed yet.';
+            docSnippet.textContent = 'Recommendations are generated from BIS documents and vector search.';
+            copyBtn.disabled = true;
+        }
+
+        function highlightQueryTerms(text, query) {
+            if (!query) return text;
+            const terms = Array.from(new Set(query.trim().split(/\s+/).filter(term => term.length > 2)));
+            if (!terms.length) return text;
+            const regex = new RegExp(`(${terms.map(term => term.replace(/[.*+?^${}()|[\]\\]/g, '')).join('|')})`, 'gi');
+            return text.replace(regex, '<span class="badge-pill medium">$1</span>');
+        }
+
+        function renderResults(data) {
+            const standards = data.standards || [];
+            const query = queryInput.value.trim();
+            const docSnippetText = (standards[0] && (standards[0].snippet || standards[0].reason || 'Based on retrieved BIS documents.')).slice(0, 180) + '...';
+            const averageConfidence = standards.length > 0 ? standards.reduce((sum, item) => sum + (item.confidence || 0), 0) / standards.length : 0;
+            const docsSearched = data.documents_searched || '—';
+
+            matchedKeywords.textContent = Array.from(new Set(query.match(/\w{4,}/g) || [])).slice(0, 5).join(', ') || '—';
+            docSnippet.textContent = docSnippetText;
+            setAnalytics(data.latency_seconds || '—', averageConfidence, docsSearched);
+
+            if (!standards.length) {
+                resultsPanel.innerHTML = `<div class="message-box">No BIS standards were found. Try a more specific material description.</div>`;
+                copyBtn.disabled = true;
+                return;
+            }
+
+            resultsPanel.innerHTML = standards.map((std, index) => {
+                const code = std.code || 'N/A';
+                const title = std.title || 'Standard title unavailable';
+                const explanation = std.reason || std.explanation || 'Explanation not available.';
+                const confidence = typeof std.confidence === 'number' ? Math.round(std.confidence * 100) : 45;
+                const relevance = confidence >= 80 ? 'high' : confidence >= 60 ? 'medium' : '';
+                return `
+                    <article class="result-card" style="animation-delay:${index * 0.06}s;">
+                        <div class="result-header">
+                            <div class="result-title">
+                                <div class="standard-code">${code}</div>
+                                <h3>${title}</h3>
+                            </div>
+                            <div class="badge-strip">
+                                <span class="badge-pill ${relevance}">${confidence}% relevant</span>
+                                <span class="badge-pill">${std.docs || 'Document support'}</span>
+                            </div>
+                        </div>
+                        <p class="content-text">${highlightQueryTerms(explanation, query)}</p>
+                        <div class="confidence-bar"><div class="confidence-fill" style="width:${confidence}%"></div></div>
+                        <button class="detail-btn" type="button" data-index="${index}">View support details</button>
+                        <div class="detail-panel" id="detail-panel-${index}">
+                            <p>${highlightQueryTerms(std.snippet || explanation, query)}</p>
+                        </div>
+                    </article>
+                `;
+            }).join('');
+
+            document.querySelectorAll('.detail-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const panel = document.getElementById(`detail-panel-${btn.dataset.index}`);
+                    if (!panel) return;
+                    const visible = panel.style.display === 'block';
+                    panel.style.display = visible ? 'none' : 'block';
+                    btn.textContent = visible ? 'View support details' : 'Hide support details';
+                });
+            });
+
+            copyBtn.disabled = false;
+        }
+
+        function validateQuery(query) {
+            return materialPattern.test(query);
+        }
+
         async function recommend() {
-            const query = document.getElementById('query').value;
-            if (!query) return;
-
-            document.getElementById('loading').style.display = 'block';
-            document.getElementById('results').innerHTML = '';
-
+            clearStatus();
+            const query = queryInput.value.trim();
+            if (!query) {
+                setStatus('⚠️ Please enter a building material (cement, steel, concrete, etc.)', 'error');
+                return;
+            }
+            if (!validateQuery(query)) {
+                setStatus('⚠️ Please enter a building material (cement, steel, concrete, etc.)', 'error');
+                return;
+            }
+            showLoading();
+            submitBtn.disabled = true;
+            copyBtn.disabled = true;
+            let stepIndex = 0;
+            const steps = ['🔍 Searching standards...', '📄 Retrieving BIS documents...', '🧠 Generating recommendations...'];
+            setStatus(steps[stepIndex]);
+            const stepTimer = setInterval(() => {
+                stepIndex += 1;
+                if (stepIndex >= steps.length) {
+                    clearInterval(stepTimer);
+                    return;
+                }
+                setStatus(steps[stepIndex]);
+            }, 900);
             try {
                 const response = await fetch('http://localhost:8000/recommend', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ query })
                 });
-                
                 if (!response.ok) {
-                    const error = await response.json();
-                    throw new Error(error.detail || 'API Error: ' + response.status);
+                    const payload = await response.json().catch(() => ({}));
+                    throw new Error(payload.detail || `API Error ${response.status}`);
                 }
-                
                 const data = await response.json();
-                
-                if (!data.standards || data.standards.length === 0) {
-                    document.getElementById('results').innerHTML = '<div class="result">No standards found. Make sure OpenAI API key is set.</div>';
-                    return;
-                }
-
-                let html = `<div class="result"><h3>Recommended Standards (Latency: ${(data.latency_seconds || 0).toFixed(2)}s)</h3>`;
-                data.standards.forEach(std => {
-                    html += `<div class="standard"><strong>${std.code}: ${std.title}</strong><br>${std.reason}</div>`;
-                });
-                html += '</div>';
-                document.getElementById('results').innerHTML = html;
+                renderResults(data);
+                setStatus('✅ BIS recommendations generated successfully.');
+                saveHistory(query);
             } catch (error) {
-                document.getElementById('results').innerHTML = '<div class="result" style="color:red;"><strong>Error:</strong> ' + error.message + '<br><br>Make sure:<br>1. Backend is running on http://localhost:8000<br>2. Set OPENAI_API_KEY environment variable</div>';
+                resultsPanel.innerHTML = `<div class="message-box error"><strong>Error:</strong> ${error.message}</div>`;
             } finally {
-                document.getElementById('loading').style.display = 'none';
+                clearInterval(stepTimer);
+                submitBtn.disabled = false;
             }
         }
+
+        function resetForm() {
+            queryInput.value = '';
+            renderEmpty();
+            clearStatus();
+            hideDropdown();
+        }
+
+        async function copyResults() {
+            const cards = Array.from(resultsPanel.querySelectorAll('.result-card'));
+            if (!cards.length) return;
+            const text = cards.map(card => card.innerText.trim()).join('\n\n');
+            await navigator.clipboard.writeText(text);
+            setStatus('Copied results to clipboard.');
+        }
+
+        function saveHistory(query) {
+            const trimmed = query.trim();
+            if (!trimmed) return;
+            const history = JSON.parse(localStorage.getItem(historyKey) || '[]');
+            if (history.includes(trimmed)) return;
+            history.unshift(trimmed);
+            localStorage.setItem(historyKey, JSON.stringify(history.slice(0, 8)));
+        }
+
+        function showDropdown(value) {
+            const matches = examples.filter(item => item.toLowerCase().includes(value.toLowerCase())).slice(0, 4);
+            if (!matches.length) {
+                dropdownList.style.display = 'none';
+                return;
+            }
+            dropdownList.innerHTML = matches.map(item => `<div class="dropdown-item">${item}</div>`).join('');
+            dropdownList.style.display = 'block';
+            dropdownList.querySelectorAll('.dropdown-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    queryInput.value = item.textContent;
+                    dropdownList.style.display = 'none';
+                    queryInput.focus();
+                });
+            });
+        }
+
+        function hideDropdown() {
+            dropdownList.style.display = 'none';
+        }
+
+        function initChips() {
+            const chipList = document.getElementById('chipList');
+            chipList.innerHTML = chips.map(chip => `<button type="button" class="chip">${chip}</button>`).join('');
+            chipList.querySelectorAll('.chip').forEach(button => {
+                button.addEventListener('click', () => {
+                    queryInput.value = button.textContent;
+                    queryInput.focus();
+                });
+            });
+        }
+
+        function initVoiceInput() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                voiceBtn.style.display = 'none';
+                return;
+            }
+            recognition = new SpeechRecognition();
+            recognition.lang = 'en-US';
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
+            recognition.onstart = () => {
+                voiceActive = true;
+                voiceBtn.classList.add('active');
+                voiceBtn.textContent = '🎙️ Listening...';
+            };
+            recognition.onresult = (event) => {
+                const text = event.results[0][0].transcript;
+                queryInput.value = text;
+            };
+            recognition.onend = () => {
+                voiceActive = false;
+                voiceBtn.classList.remove('active');
+                voiceBtn.textContent = '🎙️ Voice';
+            };
+            recognition.onerror = () => {
+                voiceActive = false;
+                voiceBtn.classList.remove('active');
+                voiceBtn.textContent = '🎙️ Voice';
+            };
+            voiceBtn.addEventListener('click', () => {
+                if (voiceActive) {
+                    recognition.stop();
+                } else {
+                    recognition.start();
+                }
+            });
+        }
+
+        function initPlaceholderAnimation() {
+            const placeholders = [
+                'e.g., high strength concrete for bridges...',
+                'e.g., TMT steel bars for reinforced structures...',
+                'e.g., premix concrete for commercial buildings...',
+                'e.g., cement compliant with BIS codes...'
+            ];
+            let idx = 0;
+            setInterval(() => {
+                if (document.activeElement === queryInput) return;
+                queryInput.placeholder = placeholders[idx];
+                idx = (idx + 1) % placeholders.length;
+            }, 3200);
+        }
+
+        queryInput.addEventListener('input', (event) => {
+            const value = event.target.value.trim();
+            if (value.length > 0) showDropdown(value);
+            else hideDropdown();
+        });
+
+        queryInput.addEventListener('focus', () => {
+            if (queryInput.value.trim().length > 0) showDropdown(queryInput.value);
+        });
+
+        queryInput.addEventListener('blur', () => setTimeout(hideDropdown, 150));
+
+        queryInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                recommend();
+            }
+        });
+
+        submitBtn.addEventListener('click', recommend);
+        clearBtn.addEventListener('click', resetForm);
+        copyBtn.addEventListener('click', copyResults);
+
+        initChips();
+        initVoiceInput();
+        initPlaceholderAnimation();
+        renderEmpty();
     </script>
 </body>
 </html>
